@@ -19,7 +19,7 @@ This project is a React web application that integrates Firebase for user authen
 
 ## Demo Video
 
-[Video Demo]([https://nvn-ocr.vercel.app/login](https://www.loom.com/share/16c1d9dcdeab4a8d8b4479f869e69892?sid=05deb38b-db63-4435-8400-914cdb965793))
+[Video Demo](https://www.loom.com/share/16c1d9dcdeab4a8d8b4479f869e69892?sid=05deb38b-db63-4435-8400-914cdb965793)
 
 ---
 

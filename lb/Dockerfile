@@ -35,8 +35,8 @@ frontend http-in
 
 backend servers
     balance roundrobin
-    server web01 172.30.0.11:5173 check
-    server web02 172.30.0.12:5173 check
+    server web01 172.30.0.11:80 check
+    server web02 172.30.0.12:80 check
 EOF
 
 RUN ssh-keygen -A

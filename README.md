@@ -1,85 +1,156 @@
-React Firebase Application
-Overview
+# React Firebase Application
+
+## Overview
+
 This project is a React web application that integrates Firebase for user authentication and Firestore for storing and managing user data. The application enables users to sign in, manage their profiles, and interact with data stored in Firestore, supporting features like sorting, filtering, or searching user-related data. It provides a practical solution for user data management with a secure and intuitive interface, leveraging Firebase's backend services.
 
-External APIs Used:
-Firebase Authentication: For secure user login and registration.
-Firestore: For storing and retrieving user data.
+### External APIs Used
 
-Image Details
+- **Firebase Authentication:** For secure user login and registration.
+- **Firestore:** For storing and retrieving user data.
 
-Docker Hub Repository: https://hub.docker.com/r/nkem-slim/nkem-slim-playing-around-with-api
-Image Name: nkem-slim/nkem-slim-playing-around-with-api:v1
-Tags: v1
+---
 
-Build Instructions
-To build the Docker image locally:
-docker build -t nkem-slim/nkem-slim-playing-around-with-api:v1 .
+## Live URL
 
-This uses a multi-stage Dockerfile to compile the React application with Node.js and serve the static files with Nginx. The Firebase configuration is included in the source code.
-Run Instructions
-To run the application locally or on Web01/Web02:
-docker pull nkem-slim/nkem-slim-playing-around-with-api:v1
-docker run -d --name app --restart unless-stopped -p 8080:8080 nkem-slim/nkem-slim-playing-around-with-api:v1
+[Live Demo](https://nvn-ocr.vercel.app/login)
 
-Environment Variables:
-Optional: PORT (default: 8080) to change the Nginx listening port, e.g., --env PORT=8080.
-Firebase configuration is embedded in the application code.
+---
 
-Test locally by accessing http://localhost:8080 in a browser or using:
-curl http://localhost:8080
+## Demo Video
 
-Deployment Instructions
-On Web01 and Web02
+[Video Demo](https://nvn-ocr.vercel.app/login)
 
-SSH into each server:ssh user@web-01
-ssh user@web-02
+---
 
-Pull and run the Docker image:docker pull nkem-slim/nkem-slim-playing-around-with-api:v1
-docker run -d --name app --restart unless-stopped -p 8080:8080 nkem-slim/nkem-slim-playing-around-with-api:v1
+## Docker Image Details
 
-Verify each instance:curl http://web-01:8080
-curl http://web-02:8080
+- **Docker Hub Repository:** https://hub.docker.com/repositories/nkemakolamuko
+- **Image Name 1:** `nkemakolamuko/tesseract-ocr-web-01:v1`
+- **Image Name 1:** `nkemakolamuko/tesseract-ocr-web-02:v1`
+- **Image Name 1:** `nkemakolamuko/tesseract-ocr-lb-01:v1`
+- **Tags:** `v1`
 
-Load Balancer Configuration (Lb01)
+---
 
-SSH into Lb01:ssh user@lb-01
+## Prerequisites
 
-Update /etc/haproxy/haproxy.cfg with the following backend configuration:backend webapps
-balance roundrobin
-server web01 172.30.0.11:8080 check
-server web02 172.30.0.12:8080 check
+- Docker and Docker Compose installed on your host machine (Linux recommended).
+- Internet access to pull base images and dependencies.
+- (Optional) Docker Desktop if you want a GUI, but use the same context as your CLI.
 
-Reload HAProxy to apply changes:docker exec -it lb-01 sh -c 'haproxy -sf $(pidof haproxy) -f /etc/haproxy/haproxy.cfg'
+---
 
-Testing Steps & Evidence
-To verify load balancing:
+## Build & Run Instructions
 
-From your host, run:curl http://localhost
+### 1. Clone the Repository
 
-multiple times to confirm responses alternate between Web01 and Web02.
-To distinguish servers, the application includes a server-specific identifier in the response (e.g., a custom header or message like “Served by Web01”).
-Screenshots and logs are stored in the screenshots/ directory, showing:
-Local app access (http://localhost:8080).
-Load-balanced access with alternating responses.
-Example: screenshots/traffic_balance.png, screenshots/test1.txt, screenshots/test2.txt.
+```sh
+git clone <repo-url>
+cd tesseract-ocr
+```
 
-Hardening
+### 2. Build the Frontend
 
-Firebase Credentials: Currently embedded in the source code. For production, consider using environment variables or a secrets management service (e.g., Docker secrets, AWS Secrets Manager) to avoid exposing credentials.
-Input Validation: User inputs for authentication and Firestore operations are sanitized to prevent XSS attacks.
-Recommendation: Implement Firebase Security Rules to restrict Firestore access to authenticated users and validate data.
+```sh
+npm install
+npm run build
+```
 
-Challenges Faced
+This will generate the `dist/` folder.
 
-Firebase Configuration: Hardcoding Firebase credentials simplified development but posed a security risk. For future iterations, environment variables will be used.
-React Router: Nginx initially failed to handle client-side routing. Added try_files $uri $uri/ /index.html in nginx.conf to ensure proper routing.
-Load Balancing Verification: Added server-specific identifiers to confirm round-robin balancing during testing.
+### 3. Build and Start the Docker Containers
 
-Credits
+```sh
+sudo docker compose up -d --build
+```
 
-Firebase: https://firebase.google.com/ for authentication and Firestore services.
-React: https://reactjs.org/ for the frontend framework.
-Nginx: https://nginx.org/ for serving the production build.
-Docker: https://www.docker.com/ for containerization.
-Lab Setup: https://github.com/waka-man/web_infra_lab for the deployment environment.
+> If you use Docker Desktop, you can omit `sudo` and ensure your context is set to `desktop-linux`.
+
+### 4. Verify Running Containers
+
+```sh
+sudo docker ps
+```
+
+You should see `web-01`, `web-02`, and `lb-01` running.
+
+---
+
+## Accessing the Application
+
+- **Direct Access to Web Servers:**
+
+  - [http://localhost:8080](http://localhost:8080) → web-01
+  - [http://localhost:8081](http://localhost:8081) → web-02
+
+- **Load Balanced Access:**
+  - [http://localhost:8082](http://localhost:8082) → HAProxy load balancer (lb-01)
+
+---
+
+## Load Balancer Configuration
+
+The load balancer (`lb-01`) uses HAProxy and is pre-configured to round-robin between web-01 and web-02:
+
+```haproxy
+backend servers
+    balance roundrobin
+    server web01 172.30.0.11:80 check
+    server web02 172.30.0.12:80 check
+```
+
+---
+
+## Testing Load Balancing
+
+From your host, run:
+
+```sh
+curl http://localhost:8082
+```
+
+Run the above command multiple times. You should see the `x-served-by` header alternate between `web01` and `web02`, confirming round-robin load balancing.
+
+---
+
+## SSH Access (Optional)
+
+You can SSH into any container for debugging:
+
+```sh
+ssh -p 2210 ubuntu@localhost   # lb-01
+ssh -p 2211 ubuntu@localhost   # web-01
+ssh -p 2212 ubuntu@localhost   # web-02
+```
+
+Default password: `pass123`
+
+---
+
+## Environment Variables
+
+- The application uses embedded Firebase configuration for demonstration.
+- (Optional) You can set the Nginx port with the `PORT` environment variable.
+
+---
+
+## Troubleshooting
+
+- If you see a "Pool overlaps with other one on this address space" error, change the subnet in `compose.yml` under `networks:lablan:ipam:config:subnet` to a unique value (e.g., `172.30.0.0/24`).
+- If you get SSH host key warnings, remove the offending key with:
+  ```sh
+  ssh-keygen -f "$HOME/.ssh/known_hosts" -R '[localhost]:PORT'
+  ```
+
+---
+
+---
+
+## Credits
+
+- [Firebase](https://firebase.google.com/)
+- [React](https://reactjs.org/)
+- [Nginx](https://nginx.org/)
+- [Docker](https://www.docker.com/)
+- [Lab Setup](https://github.com/waka-man/web_infra_lab)

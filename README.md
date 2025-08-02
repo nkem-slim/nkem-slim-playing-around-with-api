@@ -112,6 +112,10 @@ curl http://localhost:8082
 
 Run the above command multiple times. You should see the `x-served-by` header alternate between `web01` and `web02`, confirming round-robin load balancing.
 
+## Screenshot of how your response should be be like, yunno...
+<img width="1360" height="768" alt="image" src="https://github.com/user-attachments/assets/82987cfc-cbe8-476c-ab3b-fbcc8d569dff" />
+
+
 ---
 
 ## SSH Access (Optional)
